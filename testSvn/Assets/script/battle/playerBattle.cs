@@ -66,7 +66,7 @@ public class playerBattle : MonoBehaviour {
         if (anim.GetCurrentAnimatorStateInfo(0).IsName("Base Layer.attack3")) _damage = 15;
         if (anim.GetCurrentAnimatorStateInfo(0).IsName("Base Layer.attack4")) _damage = 25;
         //print(distance);
-        print(_damage);
+
        // print(state);
         foreach (GameObject g in enemy)
         {
@@ -75,11 +75,12 @@ public class playerBattle : MonoBehaviour {
                 Vector3 v = new Vector3(g.transform.position.x, transform.position.y, g.transform.position.z);
                 toOther = v - transform.position;//y轴要一样，enemy 和 player
                 _dot = Vector3.Dot(forward, toOther);
-                print(toOther.magnitude);
-                print(_dot);
-                print(dot);
+
+
+
                 if (toOther.magnitude <= distance && dot * distance <= _dot)
                 {
+                    g.GetComponent<enemy>().PlayerObj = this.gameObject;
                     g.GetComponent<enemy>().IsAttacked = true;
                     g.GetComponent<enemy>().Hp -= _damage;
                 }
@@ -123,6 +124,7 @@ public class playerBattle : MonoBehaviour {
                     _dot = Vector3.Dot(forward, toOther);
                     if (toOther.magnitude <= distance && dot * distance <= _dot)
                     {
+                        g.GetComponent<enemy>().PlayerObj = this.gameObject;
                         g.GetComponent<enemy>().IsAttacked = true;
                         g.GetComponent<enemy>().Hp -= _damage;
                     }
