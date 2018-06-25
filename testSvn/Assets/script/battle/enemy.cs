@@ -83,6 +83,7 @@ public class enemy : MonoBehaviour {
     private float toOther;
     private float attackDistance;
     private float range;
+    private bool isYield;
 
     void Start()
     {
@@ -95,6 +96,7 @@ public class enemy : MonoBehaviour {
         navMeshAgent = GetComponent<NavMeshAgent>();
         anim["touchHead"].speed = 2;
         playerObj = null;
+        isYield = false;
     }
 
     void Update()
@@ -106,11 +108,12 @@ public class enemy : MonoBehaviour {
             if (playerObj!=null)
             {
                 playerObj = null;//失去目标
+                StopAllCoroutines();
             }           
             navMeshAgent.SetDestination(_position);
-            if (transform.position==_position)
+            if ((transform.position-_position).magnitude<=3)
             {
-                navMeshAgent.Stop();
+                navMeshAgent.ResetPath();
             }
         }
         if (playerObj!=null)
@@ -119,14 +122,20 @@ public class enemy : MonoBehaviour {
              toOther = (playerObj.transform.position - transform.position).magnitude;
             playerBattle battle = playerObj.GetComponent<playerBattle>();
             navMeshAgent.SetDestination(playerObj.transform.position);
-            if (toOther<=attackDistance)
+            
+            if (toOther<=attackDistance&&!isYield)
             {
                 //navMeshAgent.Stop();
                 //攻击动画   
                // anim.Play("choice",PlayMode.StopSameLayer);
                 //attack(battle);
-                StartCoroutine(waitAttack(2f,battle));
+                StartCoroutine(waitAttack(2.1f,battle));
+                isYield = true;
             }
+        }
+        if (navMeshAgent.hasPath)
+        {
+            anim.Play("run",PlayMode.StopSameLayer);
         }
         if (isAttacked)
         {
@@ -165,9 +174,12 @@ public class enemy : MonoBehaviour {
 
     IEnumerator waitAttack(float interval,playerBattle battle)
     {
-        anim.Play("choice", PlayMode.StopSameLayer);
+
+        //yield return new WaitForSeconds(interval);
         attack(battle);
+
         yield return new WaitForSeconds(interval);
+        StartCoroutine(waitAttack(interval, battle));
     }
 
     private void attack(playerBattle battle)
@@ -181,6 +193,8 @@ public class enemy : MonoBehaviour {
         _dot = Vector3.Dot(forward,_toOther);
         if (toOther<=attackDistance&&dot*attackDistance<_dot)
         {
+            navMeshAgent.ResetPath();
+            anim.Play("choice", PlayMode.StopAll);
             battle.CurrntHp -= _damage;
         }
     }
